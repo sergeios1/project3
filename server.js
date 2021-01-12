@@ -35,7 +35,7 @@ Url = mongoose.model("Url", urlSchema);
 let bodyParser = require('body-parser')
 
 
-let shorty = 1;
+let shorty = 0;
 
 
 
