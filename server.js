@@ -78,9 +78,10 @@ app.get('/api/shorturl/:word', (req,res) => {
   })
 })
 
-
+/*
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });
 
+*/
 
