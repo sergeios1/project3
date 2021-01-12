@@ -32,28 +32,43 @@ let urlSchema = new mongoose.Schema({
 })
 
 Url = mongoose.model("Url", urlSchema);
-let bodyParser = require('body-parser')
+let bodyParser = require('body-parser');
+const { response } = require('express');
 
 
-let shorty = 0;
 
 
 
 
 app.post('/api/shorturl/new', bodyParser.urlencoded({extended: false}) , (req, res) => {
   let urls = req.body.url 
-  let jojo = new Url({long: urls, short: shorty+=1}) 
+  let responseObject = {};
+  responseObject['original_url'] = urls;
 
-  jojo.save((err,data) => {
-    if(err)return console.error(err);
+  let shorty = 1;
+
+
+
+
+  Url.findOne({}).sort({short: 'desc'}).exec((err, data) => {
+    if(!err && data != undefined){
+      shorty = data.short + 1;
+    }
+    if(!err){
+      mongoose.set('useFindAndModify', false); 
+      Url.findOneAndUpdate(
+        {long: urls}, {long: urls, short: shorty}, {new: true, upsert: true}, (error, savedUrl) => {
+          if(!error){{
+            responseObject['short_url'] = savedUrl.short;
+            res.json(responseObject);
+          }}
+
+        }
+
+      )
+    }
   })
-
-  res.json({"original_url":urls,"short_url":shorty})
 })
-
-app.listen(port, function() {
-  console.log(`Listening on port ${port}`);
-});
 
 app.get('/api/shorturl/:word', (req,res) => {
   console.log(req.params.word);
@@ -63,4 +78,10 @@ app.get('/api/shorturl/:word', (req,res) => {
     res.redirect(data[0].long);
   })
 })
+
+
+app.listen(port, function() {
+  console.log(`Listening on port ${port}`);
+});
+
 
